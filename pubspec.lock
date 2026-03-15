@@ -67,6 +67,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  hex_toolkit:
+    dependency: "direct main"
+    description:
+      name: hex_toolkit
+      sha256: f9a98624f62eb587519cde66f6248d94330a111d8110f75c377def0faecf4351
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   leak_tracker:
     dependency: transitive
     description:
