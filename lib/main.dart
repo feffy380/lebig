@@ -1,7 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:hex_toolkit/hex_toolkit.dart';
+import 'package:lebig/world.dart';
+
+// TODO: stateful widget to hold this
+final world = World(10, 10);
 
 void main() {
   runApp(const MainApp());
@@ -15,13 +18,11 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'lebig',
       home: Scaffold(
-        body: Center(
-          // Placeholder hexes in the middle
-          child: CustomPaint(
-            painter: HexPainter(Hex.zero().ring(1).toList()),
-            // child: Container(),
-          ),
-          // child: Text('Hello World!'),
+        // Placeholder hexes in the middle
+        // TODO: centered canvas, padding around edges
+        body: CustomPaint(
+            painter: HexPainter(world),
+            child: Container(),
         ),
       ),
     );
@@ -31,19 +32,21 @@ class MainApp extends StatelessWidget {
 class HexPainter extends CustomPainter {
   static const hexSize = 20.0;
   static const hexPadding = 1.0;
-  final List<Hex> hexes;
+  final World world;
 
-  HexPainter(this.hexes);
+  HexPainter(this.world);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
-    // Zero in the center
-    canvas.translate(size.width / 2, size.height / 2);
-    // canvas.translate(hexSize, hexSize);
+    var (gridW, gridH) = world.gridSize(hexSize);
+    var xOffset = hexSize + (size.width - gridW) / 2;
+    var yOffset = hexSize + (size.height - gridH) / 2;
+
+    canvas.translate(xOffset, yOffset);
 
     final paint = Paint()..color = Colors.blue;
-    for (var hex in hexes) {
+    for (var hex in world.agents) {
 
       // Get vertices ...
       var vertices = hex.vertices(hexSize, padding: hexPadding).map((e) => Offset(e.x, e.y)).toList();
@@ -57,5 +60,3 @@ class HexPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-
-// TODO: Simulation engine class
