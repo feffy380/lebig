@@ -1,3 +1,6 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:hex_toolkit/hex_toolkit.dart';
 
 /// Manage world state and resolve timesteps.
@@ -6,13 +9,16 @@ import 'package:hex_toolkit/hex_toolkit.dart';
 class World {
   final int width;
   final int height;
-  List<Hex> agents = [];
+  List<Hex> positions = [];
+  List<Color> colors = [];
 
   World(this.width, this.height) {
-    // Fill world with placeholder hexes
+    // Fill world with randomly colored placeholder hexes
+    var rng = Random();
     for (var i = 0; i < width; i++) {
       for (var j = 0; j < height; j++) {
-        agents.add(Hex.fromOffset(GridOffset(i, j)));
+        positions.add(Hex.fromOffset(GridOffset(i, j)));
+        colors.add(Color((rng.nextDouble() * 0xFFFFFF).toInt() | 0xFF000000));
       }
     }
   }

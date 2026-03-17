@@ -19,7 +19,6 @@ class MainApp extends StatelessWidget {
       title: 'lebig',
       home: Scaffold(
         // Placeholder hexes in the middle
-        // TODO: centered canvas, padding around edges
         body: CustomPaint(
             painter: HexPainter(world),
             child: Container(),
@@ -45,8 +44,9 @@ class HexPainter extends CustomPainter {
 
     canvas.translate(xOffset, yOffset);
 
-    final paint = Paint()..color = Colors.blue;
-    for (var hex in world.agents) {
+    for (var i = 0; i < world.positions.length; i++) {
+      final hex = world.positions[i];
+      final paint = Paint()..color = world.colors[i];
 
       // Get vertices ...
       var vertices = hex.vertices(hexSize, padding: hexPadding).map((e) => Offset(e.x, e.y)).toList();
