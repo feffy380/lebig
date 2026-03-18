@@ -23,14 +23,16 @@ class World {
     }
   }
 
-  /// Calculate grid size in pixels
+  /// Calculate grid size in pixels (w,h)
   (double, double) gridSize(double hexSize) {
     var topLeft = Hex.zero().centerPoint(hexSize);
-    var bottomRight = Hex.fromOffset(GridOffset(width-1, height-1)).centerPoint(hexSize);
+    // calculate right edge from offset row (row 1)
+    var right = Hex.fromOffset(GridOffset(width-1, 1)).centerPoint(hexSize);
+    var bottom = Hex.fromOffset(GridOffset(0, height-1)).centerPoint(hexSize);
 
     return (
-      bottomRight.x - topLeft.x + 2 * hexSize,
-      bottomRight.y - topLeft.y + 2 * hexSize,
+      right.x - topLeft.x + 2 * hexSize,
+      bottom.y - topLeft.y + 2 * hexSize,
     );
   }
 }
