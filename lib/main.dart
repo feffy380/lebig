@@ -19,9 +19,15 @@ class MainApp extends StatelessWidget {
       title: 'lebig',
       home: Scaffold(
         // Placeholder hexes in the middle
-        body: CustomPaint(
-            painter: HexPainter(world),
-            child: Container(),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Container(
+            color: Colors.blueGrey,
+            child: CustomPaint(
+              painter: HexPainter(world),
+              size: Size.infinite,
+            ),
+          ),
         ),
       ),
     );
