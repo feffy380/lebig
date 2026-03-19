@@ -6,6 +6,7 @@ import 'package:lebig/world.dart';
 
 // TODO: stateful widget to hold this
 final world = World(10, 10);
+final simController = SimulationController(world: world)..run();
 
 void main() {
   runApp(const MainApp());
@@ -24,9 +25,12 @@ class MainApp extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Container(
             color: Colors.blueGrey,
-            child: CustomPaint(
-              painter: HexPainter(world),
-              size: Size.infinite,
+            child: ListenableBuilder(
+              listenable: simController,
+              builder: (context, child) => CustomPaint(
+                painter: HexPainter(simController.world),
+                size: Size.infinite,
+              ),
             ),
           ),
         ),

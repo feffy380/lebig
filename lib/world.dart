@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:hex_toolkit/hex_toolkit.dart';
 
-/// Manage world state and resolve timesteps.
+/// Hold world state and resolve timesteps.
 /// World is a hex grid that wraps in the x and y direction (torus).
 /// Represented by a rectangular grid where even rows are offset by half a cell.
 class World {
@@ -17,6 +18,9 @@ class World {
     var rng = Random();
     for (var i = 0; i < width; i++) {
       for (var j = 0; j < height; j++) {
+        if (rng.nextDouble() > 0.1) {
+          continue;
+        }
         positions.add(Hex.fromOffset(GridOffset(i, j)));
         colors.add(Color((rng.nextDouble() * 0xFFFFFF).toInt() | 0xFF000000));
       }
@@ -34,5 +38,50 @@ class World {
       right.x - topLeft.x + 2 * hexSize,
       bottom.y - topLeft.y + 2 * hexSize,
     );
+  }
+
+  /// Update simulation state
+  void step() {
+    // Placeholder: move everything to the right, wrapping around
+    for (var i = 0; i < positions.length; i++) {
+      var hex = positions[i];
+      var pos = hex.toOffset();
+      hex = Hex.fromOffset(GridOffset((pos.q + 1) % width, pos.r));
+      positions[i] = hex;
+    }
+  }
+}
+
+/// Advance world state and notify UI
+class SimulationController extends ChangeNotifier {
+  final World _world;
+  var tickRate = 1.0;  // updates per second
+  var _isRunning = false;
+
+  SimulationController({required World world}) : _world = world;
+
+  World get world => _world;
+
+  void run() async {
+    _isRunning = true;
+    while (_isRunning) {
+      final stopwatch = Stopwatch()..start();
+
+      // Tick
+      _world.step();
+
+      // Update UI
+      notifyListeners();
+
+      // Rate limit
+      final elapsed = stopwatch.elapsedMilliseconds;
+      final budget = 1000 / tickRate;
+      if (elapsed < budget) {
+        await Future.delayed(Duration(milliseconds: (budget - elapsed).toInt()));
+      } else {
+        // Don't pause if budget exceeded
+        await Future.delayed(Duration.zero);
+      }
+    }
   }
 }
