@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -35,7 +36,6 @@ class MainApp extends StatelessWidget {
 }
 
 class HexPainter extends CustomPainter {
-  static const hexSize = 20.0;
   static const hexPadding = 1.0;
   final World world;
 
@@ -44,7 +44,12 @@ class HexPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
+    // scale grid to fill canvas
+    var hexSize = 20.0;
     var (gridW, gridH) = world.gridSize(hexSize);
+    hexSize *= min(size.width / gridW, size.height / gridH);
+    (gridW, gridH) = world.gridSize(hexSize);
+
     var xOffset = hexSize + (size.width - gridW) / 2;
     var yOffset = hexSize + (size.height - gridH) / 2;
 
