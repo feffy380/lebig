@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:lebig/sim_controller.dart';
 import 'package:lebig/world.dart';
 
 void main() {
@@ -21,7 +22,7 @@ class MainApp extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Container(
             color: Colors.blueGrey,
-            child: SimulationScreen(),
+            child: SimScreen(),
           ),
         ),
       ),
@@ -29,20 +30,20 @@ class MainApp extends StatelessWidget {
   }
 }
 
-class SimulationScreen extends StatefulWidget {
-  const SimulationScreen({super.key});
+class SimScreen extends StatefulWidget {
+  const SimScreen({super.key});
 
   @override
-  State<SimulationScreen> createState() => _SimulationScreenState();
+  State<SimScreen> createState() => _SimScreenState();
 }
 
-class _SimulationScreenState extends State<SimulationScreen> {
-  late final SimulationController _controller;
+class _SimScreenState extends State<SimScreen> {
+  late final SimController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = SimulationController(world: World(20, 20))..start();
+    _controller = SimController(world: World(20, 20))..start();
   }
 
   @override
