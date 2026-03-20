@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:hex_toolkit/hex_toolkit.dart';
@@ -11,7 +10,7 @@ class World {
   final int width;
   final int height;
   List<Hex> positions = [];
-  List<Color> colors = [];
+  List<int> colors = [];
 
   World(this.width, this.height) {
     // Fill world with randomly colored placeholder hexes
@@ -22,7 +21,7 @@ class World {
           continue;
         }
         positions.add(Hex.fromOffset(GridOffset(i, j)));
-        colors.add(Color((rng.nextDouble() * 0xFFFFFF).toInt() | 0xFF000000));
+        colors.add((rng.nextDouble() * 0xFFFFFF).toInt() | 0xFF000000);
       }
     }
   }
@@ -62,7 +61,7 @@ class SimulationController extends ChangeNotifier {
 
   World get world => _world;
 
-  void run() async {
+  void start() async {
     _isRunning = true;
     while (_isRunning) {
       final stopwatch = Stopwatch()..start();
@@ -83,5 +82,9 @@ class SimulationController extends ChangeNotifier {
         await Future.delayed(Duration.zero);
       }
     }
+  }
+
+  void stop() {
+    _isRunning = false;
   }
 }

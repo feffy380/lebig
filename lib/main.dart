@@ -4,10 +4,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lebig/world.dart';
 
-// TODO: stateful widget to hold this
-final world = World(10, 10);
-final simController = SimulationController(world: world)..run();
-
 void main() {
   runApp(const MainApp());
 }
@@ -25,15 +21,43 @@ class MainApp extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Container(
             color: Colors.blueGrey,
-            child: ListenableBuilder(
-              listenable: simController,
-              builder: (context, child) => CustomPaint(
-                painter: HexPainter(simController.world),
-                size: Size.infinite,
-              ),
-            ),
+            child: SimulationScreen(),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class SimulationScreen extends StatefulWidget {
+  const SimulationScreen({super.key});
+
+  @override
+  State<SimulationScreen> createState() => _SimulationScreenState();
+}
+
+class _SimulationScreenState extends State<SimulationScreen> {
+  late final SimulationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = SimulationController(world: World(20, 20))..start();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.stop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, child) => CustomPaint(
+        painter: HexPainter(_controller.world),
+        size: Size.infinite,  // TODO: Use InteractiveViewer for pan and zoom
       ),
     );
   }
@@ -61,7 +85,7 @@ class HexPainter extends CustomPainter {
 
     for (var i = 0; i < world.positions.length; i++) {
       final hex = world.positions[i];
-      final paint = Paint()..color = world.colors[i];
+      final paint = Paint()..color = Color(world.colors[i]);
 
       // Get vertices ...
       var vertices = hex.vertices(hexSize, padding: hexPadding).map((e) => Offset(e.x, e.y)).toList();
