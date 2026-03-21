@@ -86,7 +86,7 @@ class HexPainter extends CustomPainter {
 
     for (var i = 0; i < world.positions.length; i++) {
       final hex = world.positions[i];
-      final paint = Paint()..color = Color(world.colors[i]);
+      final paint = Paint()..color = Color(world.organisms[i].color);
 
       // Get vertices ...
       var vertices = hex.vertices(hexSize, padding: hexPadding).map((e) => Offset(e.x, e.y)).toList();
