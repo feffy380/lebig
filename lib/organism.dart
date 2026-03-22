@@ -10,7 +10,7 @@ class Organism {
   // memory. registers or a stack or both
   // child buffer?
 
-  Organism({required this.color});
+  Organism({required this.color, required this.program});
 
   void execute() {
     var opcode = program[ip];
@@ -25,6 +25,6 @@ class Organism {
       // world.requestMove(id)
     }
 
-    ip++;
+    ip = (ip + 1) % program.length;
   }
 }

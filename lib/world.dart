@@ -23,7 +23,7 @@ class World {
         if (this.rng.nextDouble() > 0.1) {
           continue;
         }
-        organisms.add(Organism(color: randRGB(this.rng)));
+        organisms.add(Organism(color: randRGB(this.rng), program: []));
         positions.add(Hex.fromOffset(GridOffset(i, j)));
       }
     }
