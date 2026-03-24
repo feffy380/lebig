@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/sim_controller.dart';
 import 'package:lebig/world.dart';
 
@@ -43,7 +44,7 @@ class _SimScreenState extends State<SimScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = SimController(world: World(20, 20))..start();
+    _controller = SimController(world: World(width: 20, height: 20, rng: Random()))..start();
   }
 
   @override
@@ -85,7 +86,7 @@ class HexPainter extends CustomPainter {
     canvas.translate(xOffset, yOffset);
 
     for (var i = 0; i < world.positions.length; i++) {
-      final hex = world.positions[i];
+      final hex = Hex.fromCube(world.positions[i]);
       final paint = Paint()..color = Color(world.organisms[i].color);
 
       // Get vertices ...

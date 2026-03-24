@@ -1,7 +1,9 @@
 import 'package:lebig/op.dart';
+import 'package:lebig/world.dart';
 
 /// Memory and processor state of a digital organism
 class Organism {
+  final int id;
   final int color;
   // instruction memory: hold instructions
   late List<Op> program = [];
@@ -10,18 +12,21 @@ class Organism {
   // memory. registers or a stack or both
   // child buffer?
 
-  Organism({required this.color, required this.program});
+  Organism({required this.id, required this.color, required this.program});
 
-  void execute() {
+  /// Execute a single instruction
+  void execute(World world) {
     var opcode = program[ip];
 
     switch (opcode) {
       case Op.nop:
         break;
+      case Op.move:
+        world.requestMove(id);
       // TODO: movement instruction
       // - needs access to world and own ID. could pass world and store own ID,
       // or pass an execution context object?
-      // - only moves forward, which means we need rotate ops
+      // - only moves forward for now, which means we need rotate ops
       // world.requestMove(id)
     }
 

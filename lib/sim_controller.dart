@@ -4,7 +4,7 @@ import 'package:lebig/world.dart';
 /// Advance world state and notify UI
 class SimController extends ChangeNotifier {
   final World _world;
-  var tickRate = 1.0;  // updates per second
+  var tickRate = 8.0;  // updates per second
   var _isRunning = false;
 
   SimController({required World world}) : _world = world;

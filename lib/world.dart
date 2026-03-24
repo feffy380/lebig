@@ -10,21 +10,22 @@ class World {
   late final Random rng;
   final int width;
   final int height;
-  // is this worth it? successful organisms will fill the world and grid will become dense anyway
-  // 2d List of Organisms would be good enough
+  // might move to dense grid later, but we still need organism->position lookup
   List<Organism> organisms = [];
-  List<Hex> positions = [];
+  List<Cube> positions = [];
+  List<Cube> rotations = [];
 
-  World(this.width, this.height, {Random? rng}) {
-    this.rng = rng ?? Random();
+  World({required this.width, required this.height, required this.rng}) {
+    var directions = Hex.zero().neighbors().map((e) => e.cube).toList();
     // PLACEHOLDER: Fill world with randomly colored hexes
     for (var i = 0; i < width; i++) {
       for (var j = 0; j < height; j++) {
-        if (this.rng.nextDouble() > 0.1) {
+        if (rng.nextDouble() > 0.1) {
           continue;
         }
-        organisms.add(Organism(color: randRGB(this.rng), program: []));
-        positions.add(Hex.fromOffset(GridOffset(i, j)));
+        organisms.add(Organism(id: organisms.length, color: randRGB(rng), program: []));
+        positions.add(GridOffset(i, j).toCube());
+        rotations.add(directions[rng.nextInt(directions.length)]);
       }
     }
   }
@@ -53,10 +54,24 @@ class World {
     for (var _ in organisms) {
       // stochastic scheduling. no collision yet
       var i = rng.nextInt(organisms.length);
-      var hex = positions[i];
-      var pos = hex.toOffset();
-      hex = Hex.fromOffset(GridOffset((pos.q + 1) % width, pos.r));
-      positions[i] = hex;
+      requestMove(organisms[i].id);
+      // new random direction
+      // TODO: rotate ops
+      var directions = Hex.zero().neighbors();
+      rotations[i] = directions[rng.nextInt(directions.length)].cube;
+    }
+  }
+
+  /// Move organism forward in the direction it's facing. Fails if destination is occupied
+  void requestMove(int id) {
+    var newOffset = (positions[id] + rotations[id]).toGridOffset(); // TODO: helper method to wrap coords
+    var newPos = Cube.fromGridOffset(GridOffset(newOffset.q % width, newOffset.r % height));
+    // TODO: optimize collision check
+    if (positions.any((e) => newPos == e)) {
+      // occupied. move fails
+      return;
+    } else {
+      positions[id] = newPos;
     }
   }
 }

@@ -1,3 +1,4 @@
 enum Op {
   nop,
+  move,
 }
