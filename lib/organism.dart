@@ -23,11 +23,16 @@ class Organism {
         break;
       case Op.move:
         world.requestMove(id);
-      // TODO: movement instruction
-      // - needs access to world and own ID. could pass world and store own ID,
-      // or pass an execution context object?
-      // - only moves forward for now, which means we need rotate ops
-      // world.requestMove(id)
+      case Op.turnLeft:
+        world.requestRotate(id, -1);
+      case Op.turnRight:
+        world.requestRotate(id, 1);
+      case Op.turnRand:
+        if (world.rng.nextDouble() < 0.5) {
+          world.requestRotate(id, 1);
+        } else {
+          world.requestRotate(id, -1);
+        }
     }
 
     ip = (ip + 1) % program.length;

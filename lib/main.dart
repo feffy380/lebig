@@ -94,6 +94,8 @@ class HexPainter extends CustomPainter {
 
       // ... and draw them
       canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, paint);
+
+      // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
     }
     canvas.restore();
   }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:hex_toolkit/hex_toolkit.dart';
+import 'package:lebig/op.dart';
 import 'package:lebig/organism.dart';
 
 /// Hold world state and resolve timesteps.
@@ -23,7 +24,11 @@ class World {
         if (rng.nextDouble() > 0.1) {
           continue;
         }
-        organisms.add(Organism(id: organisms.length, color: randRGB(rng), program: []));
+        organisms.add(Organism(
+          id: organisms.length,
+          color: randRGB(rng),
+          program: [Op.move, Op.turnRand], // dummy program. wander randomly
+        ));
         positions.add(GridOffset(i, j).toCube());
         rotations.add(directions[rng.nextInt(directions.length)]);
       }
@@ -45,20 +50,10 @@ class World {
 
   /// Update simulation state
   void step() {
-    // PLACEHOLDER: move everything to the right, wrapping around
-    // TODO: execute organisms
-    // - stochastic scheduling to avoid order bias
-    // - execute 1 instruction per organism for now. do multiple to reduce overhead/improve locality later
-    // - instructions implemented here or by helper because org has no direct access to world state
-    //    - use enhanced enum
+    // stochastic scheduling. no weighting yet
     for (var _ in organisms) {
-      // stochastic scheduling. no collision yet
       var i = rng.nextInt(organisms.length);
-      requestMove(organisms[i].id);
-      // new random direction
-      // TODO: rotate ops
-      var directions = Hex.zero().neighbors();
-      rotations[i] = directions[rng.nextInt(directions.length)].cube;
+      organisms[i].execute(this);
     }
   }
 
@@ -73,6 +68,13 @@ class World {
     } else {
       positions[id] = newPos;
     }
+  }
+
+  /// Rotate organism clockwise in 60-degree steps
+  void requestRotate(int id, int steps) {
+    var rotation = rotations[id];
+    rotation = Hex.fromCube(rotation).rotateAround(Hex.zero(), steps).cube;
+    rotations[id] = rotation;
   }
 }
 
