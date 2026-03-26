@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/op.dart';
 import 'package:lebig/world.dart';
 
@@ -8,6 +9,8 @@ class Organism {
   final int id;
   final int color;
   double energy;
+  Cube position;
+  Cube rotation;
   // instruction memory: hold instructions
   late List<Op> program;
   // instruction pointer
@@ -19,11 +22,12 @@ class Organism {
     required this.id,
     required this.color,
     required this.energy,
+    required this.position,
+    required this.rotation,
     required this.program,
   });
 
   Op get curInst => program[ip];
-  bool get isDead => energy == 0;
 
   void advanceIP() {
     ip = (ip + 1) % program.length;

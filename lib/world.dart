@@ -14,8 +14,8 @@ class World {
 
   // might move to dense grid later, but we still need organism->position lookup
   List<Organism> organisms = [];
-  List<Cube> positions = [];
-  List<Cube> rotations = [];
+  Map<int, int> orgIndex = {}; // id -> list index
+  int nextID = 0;
 
   // Energy model
   late List<double> energyMap;
@@ -25,6 +25,8 @@ class World {
   // Maybe make min drain constant so organisms eventually die if they never get scheduled?
   double energyDrainCoeff = 1 / 1000;
   double energyCostFloor = 0.01;
+
+  int timestep = 0;
 
   World({required this.width, required this.height, required this.rng}) {
     // Scatter patches of energy around the map
@@ -49,16 +51,22 @@ class World {
         if (rng.nextDouble() > 0.1) {
           continue;
         }
+        var id = genID();
         organisms.add(Organism(
-          id: organisms.length,
+          id: id,
           color: randRGB(rng),
           energy: 100, // TODO: make initial energy configurable
+          position: GridOffset(i, j).toCube(),
+          rotation: directions[rng.nextInt(directions.length)],
           program: [Op.move, Op.turnRand], // dummy program. wander randomly
         ));
-        positions.add(GridOffset(i, j).toCube());
-        rotations.add(directions[rng.nextInt(directions.length)]);
+        orgIndex[id] = organisms.length - 1;
       }
     }
+  }
+
+  int genID() {
+    return nextID++;
   }
 
   /// Calculate grid size in pixels (w,h)
@@ -81,18 +89,12 @@ class World {
       var i = rng.nextInt(organisms.length);
       var org = organisms[i];
 
-      if (org.isDead) continue;
-
-      // pay energy cost
+      // Pay energy cost
       var energyCost = max(org.energy * energyDrainCoeff, energyCostFloor);
-      // TODO: Death
-      // needs new data structure to decouple ID from list position
+      // Death
       if (energyCost > org.energy) {
-        print("Organism ${org.id} ran out of energy");
-        org.reduceEnergy(energyCost);
-        // organisms.removeAt(i);
-        // positions.removeAt(i);
-        // rotations.removeAt(i);
+        print("($timestep) Organism ${org.id} ran out of energy");
+        removeOrganism(org.id);
         continue;
       }
       org.reduceEnergy(energyCost);
@@ -101,26 +103,27 @@ class World {
 
       // TODO: scatter some energy to keep things alive (how much?)
     }
+    timestep++;
   }
 
   /// Move organism forward in the direction it's facing. Fails if destination is occupied
   void requestMove(int id) {
-    var newOffset = (positions[id] + rotations[id]).toGridOffset(); // TODO: helper method to wrap coords
+    var org = organisms[orgIndex[id]!];
+    var newOffset = (org.position + org.rotation).toGridOffset(); // TODO: helper method to wrap coords
     var newPos = Cube.fromGridOffset(GridOffset(newOffset.q % width, newOffset.r % height));
     // TODO: optimize collision check
-    if (positions.any((e) => newPos == e)) {
+    if (organisms.any((e) => newPos == e.position)) {
       // occupied. move fails
       return;
     } else {
-      positions[id] = newPos;
+      org.position = newPos;
     }
   }
 
   /// Rotate organism clockwise in 60-degree steps
   void requestRotate(int id, int steps) {
-    var rotation = rotations[id];
-    rotation = Hex.fromCube(rotation).rotateAround(Hex.zero(), steps).cube;
-    rotations[id] = rotation;
+    var org = organisms[orgIndex[id]!];
+    org.rotation = Hex.fromCube(org.rotation).rotateAround(Hex.zero(), steps).cube;
   }
 
   void placeEnergy(Cube position, int energy) {
@@ -128,6 +131,21 @@ class World {
     int i = offset.q + offset.r * width;
     assert(i < energyMap.length);
     energyMap[i] += energy;
+  }
+
+  void removeOrganism(int id) {
+    // swap and pop
+    int index = orgIndex[id]!;
+    int last = organisms.length - 1;
+    Organism org = organisms[index];
+    Organism other = organisms[last];
+    organisms[last] = org;
+    organisms[index] = other;
+    organisms.removeLast();
+
+    // update id -> index mapping
+    orgIndex[other.id] = index;
+    orgIndex.remove(id);
   }
 }
 

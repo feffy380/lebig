@@ -86,9 +86,9 @@ class HexPainter extends CustomPainter {
     canvas.translate(xOffset, yOffset);
 
     for (var i = 0; i < world.organisms.length; i++) {
-      if (world.organisms[i].isDead) continue;
+      var org = world.organisms[i];
 
-      final hex = Hex.fromCube(world.positions[i]);
+      final hex = Hex.fromCube(org.position);
       final paint = Paint()..color = Color(world.organisms[i].color);
 
       // Get vertices ...
