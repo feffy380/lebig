@@ -85,7 +85,9 @@ class HexPainter extends CustomPainter {
 
     canvas.translate(xOffset, yOffset);
 
-    for (var i = 0; i < world.positions.length; i++) {
+    for (var i = 0; i < world.organisms.length; i++) {
+      if (world.organisms[i].isDead) continue;
+
       final hex = Hex.fromCube(world.positions[i]);
       final paint = Paint()..color = Color(world.organisms[i].color);
 
@@ -96,6 +98,7 @@ class HexPainter extends CustomPainter {
       canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, paint);
 
       // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
+      // TODO: visualize energy in environment
     }
     canvas.restore();
   }

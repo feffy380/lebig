@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:lebig/op.dart';
 import 'package:lebig/world.dart';
 
@@ -5,6 +7,7 @@ import 'package:lebig/world.dart';
 class Organism {
   final int id;
   final int color;
+  double energy;
   // instruction memory: hold instructions
   late List<Op> program = [];
   // instruction pointer
@@ -12,13 +15,23 @@ class Organism {
   // memory. registers or a stack or both
   // child buffer?
 
-  Organism({required this.id, required this.color, required this.program});
+  Organism({
+    required this.id,
+    required this.color,
+    required this.energy,
+    required this.program,
+  });
+
+  Op get curInst => program[ip];
+  bool get isDead => energy == 0;
+
+  void advanceIP() {
+    ip = (ip + 1) % program.length;
+  }
 
   /// Execute a single instruction
   void execute(World world) {
-    var opcode = program[ip];
-
-    switch (opcode) {
+    switch (curInst) {
       case Op.nop:
         break;
       case Op.move:
@@ -35,6 +48,10 @@ class Organism {
         }
     }
 
-    ip = (ip + 1) % program.length;
+    advanceIP();
+  }
+
+  void reduceEnergy(double energyCost) {
+    energy -= min(energyCost, energy);
   }
 }
