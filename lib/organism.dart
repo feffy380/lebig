@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:lebig/op.dart';
 import 'package:lebig/world.dart';
 
-/// Memory and processor state of a digital organism
+/// Digital organism consisting of virtual hardware and software
 class Organism {
   final int id;
   final int color;
   double energy;
   // instruction memory: hold instructions
-  late List<Op> program = [];
+  late List<Op> program;
   // instruction pointer
   int ip = 0;
   // memory. registers or a stack or both

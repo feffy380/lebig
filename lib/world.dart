@@ -8,9 +8,10 @@ import 'package:lebig/organism.dart';
 /// World is a hex grid that wraps in the x and y direction (torus).
 /// Represented by a rectangular grid where even rows are offset by half a cell.
 class World {
-  late final Random rng;
+  final Random rng;
   final int width;
   final int height;
+
   // might move to dense grid later, but we still need organism->position lookup
   List<Organism> organisms = [];
   List<Cube> positions = [];

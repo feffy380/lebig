@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Container(
-            color: Colors.blueGrey,
+            color: Colors.blueGrey, // TODO: bg color should be handled in painter
             child: SimScreen(),
           ),
         ),
@@ -92,7 +92,10 @@ class HexPainter extends CustomPainter {
       final paint = Paint()..color = Color(world.organisms[i].color);
 
       // Get vertices ...
-      var vertices = hex.vertices(hexSize, padding: hexPadding).map((e) => Offset(e.x, e.y)).toList();
+      var vertices = hex
+          .vertices(hexSize, padding: max(hexSize * 0.2, hexPadding))
+          .map((e) => Offset(e.x, e.y))
+          .toList();
 
       // ... and draw them
       canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, paint);
