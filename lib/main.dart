@@ -85,7 +85,22 @@ class HexPainter extends CustomPainter {
 
     canvas.translate(xOffset, yOffset);
 
-    for (var i = 0; i < world.organisms.length; i++) {
+    for (int i = 0; i < world.energyMap.length; i++) {
+      double energy = world.energyMap[i];
+      int x = i % world.width;
+      int y = (i / world.width).toInt();
+      Hex pos = Hex.fromOffset(GridOffset(x, y));
+
+      double alpha = min(energy / 100, 1.0);
+      final energyPaint = Paint()..color = Color(0xFF00FF00).withValues(alpha: alpha);
+      final vertices = pos
+          .vertices(hexSize)
+          .map((e) => Offset(e.x, e.y))
+          .toList();
+      canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, energyPaint);
+    }
+
+    for (int i = 0; i < world.organisms.length; i++) {
       var org = world.organisms[i];
 
       final hex = Hex.fromCube(org.position);

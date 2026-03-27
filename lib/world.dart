@@ -23,6 +23,7 @@ class World {
   // ~3300 cycles which feels reasonable.
   // Might need to reduce since they'll get scheduled less often.
   // Maybe make min drain constant so organisms eventually die if they never get scheduled?
+  // Could even make min drain controllable by organisms: treat as multiplier added to base of 1 for scheduling priority
   double energyDrainCoeff = 1 / 1000;
   double energyCostFloor = 0.01;
 
