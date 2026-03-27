@@ -16,6 +16,7 @@ class World {
   List<Organism> organisms = [];
   Map<int, int> orgIndex = {}; // id -> list index
   int nextID = 0;
+  Map<Cube, Organism> positions = {};
 
   // Energy model
   late List<double> energyMap;
@@ -26,13 +27,14 @@ class World {
   // Could even make min drain controllable by organisms: treat as multiplier added to base of 1 for scheduling priority
   double energyDrainCoeff = 1 / 1000;
   double energyCostFloor = 0.01;
+  double eatCoeff = 10;
 
   int timestep = 0;
 
   World({required this.width, required this.height, required this.rng}) {
     // Scatter patches of energy around the map
     energyMap = List.filled(width * height, 0);
-    var numPatches = (width / 9).toInt() * (height / 9).toInt();
+    var numPatches = (width / 4).toInt() * (height / 4).toInt();
     for (int i = 0; i < numPatches; i++) {
       // Generate at least 1 away from edges to avoid neighbors going out of bounds
       var offset = GridOffset(1 + rng.nextInt(width - 2), 1 + rng.nextInt(height - 2));
@@ -53,15 +55,20 @@ class World {
           continue;
         }
         var id = genID();
-        organisms.add(Organism(
+
+        // generate random program of length 10
+        var program = List.generate(10, (_) => Op.values[rng.nextInt(Op.values.length)]);
+        var org = Organism(
           id: id,
           color: randRGB(rng),
           energy: 100, // TODO: make initial energy configurable
           position: GridOffset(i, j).toCube(),
           rotation: directions[rng.nextInt(directions.length)],
-          program: [Op.move, Op.turnRand], // dummy program. wander randomly
-        ));
+          program: program,
+        );
+        organisms.add(org);
         orgIndex[id] = organisms.length - 1;
+        positions[org.position] = org;
       }
     }
   }
@@ -85,13 +92,15 @@ class World {
 
   /// Update simulation state
   void step() {
-    // stochastic scheduling. no weighting yet
-    for (var _ in organisms) {
-      var i = rng.nextInt(organisms.length);
-      var org = organisms[i];
+    // stochastic scheduling
+    // TODO: weighting based on energy levels. stochastic acceptance
+    var updates = organisms.length;
+    for (int i = 0; i < updates; i++) {
+      var idx = rng.nextInt(organisms.length);
+      var org = organisms[idx];
 
       // Pay energy cost
-      var energyCost = max(org.energy * energyDrainCoeff, energyCostFloor);
+      double energyCost = getExecCost(org);
       // Death
       if (energyCost > org.energy) {
         print("($timestep) Organism ${org.id} ran out of energy");
@@ -107,17 +116,24 @@ class World {
     timestep++;
   }
 
+  double getExecCost(Organism org) {
+    var energyCost = energyCostFloor + org.energy * energyDrainCoeff;
+    return energyCost;
+  }
+
   /// Move organism forward in the direction it's facing. Fails if destination is occupied
   void requestMove(int id) {
     var org = organisms[orgIndex[id]!];
     var newOffset = (org.position + org.rotation).toGridOffset(); // TODO: helper method to wrap coords
     var newPos = Cube.fromGridOffset(GridOffset(newOffset.q % width, newOffset.r % height));
     // TODO: optimize collision check
-    if (organisms.any((e) => newPos == e.position)) {
+    if (positions.containsKey(newPos)) {
       // occupied. move fails
       return;
     } else {
+      positions.remove(org.position);
       org.position = newPos;
+      positions[newPos] = org;
     }
   }
 
@@ -127,11 +143,33 @@ class World {
     org.rotation = Hex.fromCube(org.rotation).rotateAround(Hex.zero(), steps).cube;
   }
 
+  void requestEat(int id) {
+    var org = organisms[orgIndex[id]!];
+    var eatAmount = getExecCost(org) * eatCoeff;
+    var eaten = reduceEnergy(org.position, eatAmount);
+    org.increaseEnergy(eaten);
+  }
+
+  double readEnergy(Cube position) {
+    return energyMap[posToIndex(position)];
+  }
+
+  double reduceEnergy(Cube position, double amount) {
+    var eaten = min(amount, readEnergy(position));
+    energyMap[posToIndex(position)] -= eaten;
+    return eaten;
+  }
+
   void placeEnergy(Cube position, int energy) {
+    var i = posToIndex(position);
+    energyMap[i] += energy;
+  }
+
+  int posToIndex(Cube position) {
     var offset = position.toGridOffset();
     int i = offset.q + offset.r * width;
     assert(i < energyMap.length);
-    energyMap[i] += energy;
+    return i;
   }
 
   void removeOrganism(int id) {
@@ -147,6 +185,9 @@ class World {
     // update id -> index mapping
     orgIndex[other.id] = index;
     orgIndex.remove(id);
+
+    // clear position
+    positions.remove(org.position);
   }
 }
 

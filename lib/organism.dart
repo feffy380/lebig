@@ -50,6 +50,8 @@ class Organism {
         } else {
           world.requestRotate(id, -1);
         }
+      case Op.eat:
+        world.requestEat(id);
     }
 
     advanceIP();
@@ -57,5 +59,9 @@ class Organism {
 
   void reduceEnergy(double energyCost) {
     energy -= min(energyCost, energy);
+  }
+
+  void increaseEnergy(double eaten) {
+    energy += eaten;
   }
 }

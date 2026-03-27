@@ -73,6 +73,7 @@ class HexPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // TODO: rendering is slow on web. profile
     canvas.save();
     // scale grid to fill canvas
     var hexSize = 20.0;
@@ -116,7 +117,6 @@ class HexPainter extends CustomPainter {
       canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, paint);
 
       // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
-      // TODO: visualize energy in environment
     }
     canvas.restore();
   }
