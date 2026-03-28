@@ -21,10 +21,7 @@ class MainApp extends StatelessWidget {
         // Placeholder hexes in the middle
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: Container(
-            color: Colors.blueGrey, // TODO: bg color should be handled in painter
-            child: SimScreen(),
-          ),
+          child: SimScreen(),
         ),
       ),
     );
@@ -44,7 +41,7 @@ class _SimScreenState extends State<SimScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = SimController(world: World(width: 20, height: 20, rng: Random()))..start();
+    _controller = SimController(world: World(width: 60, height: 40, rng: Random()))..start();
   }
 
   @override
@@ -73,8 +70,8 @@ class HexPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: rendering is slow on web. profile
     canvas.save();
+
     // scale grid to fill canvas
     var hexSize = 20.0;
     var (gridW, gridH) = world.gridSize(hexSize);
@@ -85,6 +82,9 @@ class HexPainter extends CustomPainter {
     var yOffset = hexSize + (size.height - gridH) / 2;
 
     canvas.translate(xOffset, yOffset);
+
+    // Set background
+    canvas.drawRect(Rect.fromLTWH(-hexSize, -hexSize, gridW, gridH), Paint()..color = Colors.blueGrey);
 
     for (int i = 0; i < world.energyMap.length; i++) {
       double energy = world.energyMap[i];
