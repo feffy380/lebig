@@ -13,10 +13,36 @@ class Organism {
   Cube rotation;
   // instruction memory: hold instructions
   late List<Op> program;
-  // instruction pointer
-  int ip = 0;
+  int ip = 0; // instruction pointer
+
   // memory. registers or a stack or both
-  // child buffer?
+
+  // child buffer
+  List<Op> childBuf = [];
+  int bufSize = 0; // capacity must be increased by Grow instruction
+
+  // TODO: Reproduction
+  // - child buffer
+  // - read head at start of program
+  // - write head at start of child buffer
+  // - copy op that copies instruction under read head to write head, advances both
+
+  /*
+  # Replicator:
+  h-search: set flow head
+  grow-buffer: grow child buffer by 1
+  h-copy: copy instruction from read head to write head, advance both
+  if-n-label: label not copied
+    nop template
+    jump to flow head
+  divide
+  nop template
+
+  Can h-copy and if-label be generalized? feels cheaty that h-copy can read, write, and advance two heads all at once.
+  But splitting it up would require storing instructions in regular memory, leading to the potential for writing arbitrary
+  values to the child buffer, which would need to be converted to instructions somehow.
+  We could just index into list of Ops modulo its length
+  */
 
   Organism({
     required this.id,
@@ -36,7 +62,9 @@ class Organism {
   /// Execute a single instruction
   void execute(World world) {
     switch (curInst) {
-      case Op.nop:
+      case Op.nopA:
+      case Op.nopB:
+      case Op.nopC:
         break;
       case Op.move:
         world.requestMove(id);

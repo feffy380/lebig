@@ -103,7 +103,6 @@ class World {
       double energyCost = getExecCost(org);
       // Death
       if (energyCost > org.energy) {
-        print("($timestep) Organism ${org.id} ran out of energy");
         removeOrganism(org.id);
         continue;
       }

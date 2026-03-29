@@ -1,5 +1,5 @@
 enum Op {
-  nop,
+  nopA, nopB, nopC,
   move, // move forward
   turnLeft, // rotate 60 degrees counterclockwise
   turnRight, // rotate 60 degrees clockwise
