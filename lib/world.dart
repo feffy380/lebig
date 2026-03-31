@@ -102,11 +102,10 @@ class World {
       // Pay energy cost
       double energyCost = getExecCost(org);
       // Death
-      if (energyCost > org.energy) {
+      if (!org.reduceEnergy(energyCost)) {
         removeOrganism(org.id);
         continue;
       }
-      org.reduceEnergy(energyCost);
 
       org.execute(this);
 
@@ -187,6 +186,13 @@ class World {
 
     // clear position
     positions.remove(org.position);
+  }
+
+  void requestGrow(int id) {
+    var org = organisms[orgIndex[id]!];
+    if (org.reduceEnergy(1)) {
+      org.grow(1);
+    }
   }
 }
 

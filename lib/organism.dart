@@ -13,13 +13,19 @@ class Organism {
   Cube rotation;
   // instruction memory: hold instructions
   late List<Op> program;
+
+  // Heads
   int ip = 0; // instruction pointer
+  int readHead = 0;
+  int writeHead = 0; // points to start of child buffer
 
   // memory. registers or a stack or both
 
   // child buffer
   List<Op> childBuf = [];
   int bufSize = 0; // capacity must be increased by Grow instruction
+  // TODO: what happens to extra capacity? lost or transferred to child as energy?
+  // if primary way of transferring energy to child, should it transfer more than 1? "gestation time" might be interesting consequence though
 
   // TODO: Reproduction
   // - child buffer
@@ -80,16 +86,27 @@ class Organism {
         }
       case Op.eat:
         world.requestEat(id);
+      case Op.grow:
+        world.requestGrow(id);
     }
 
     advanceIP();
   }
 
-  void reduceEnergy(double energyCost) {
-    energy -= min(energyCost, energy);
+  bool reduceEnergy(double energyCost) {
+    if (energyCost < energy) {
+      energy -= energyCost;
+      return true;
+    }
+    return false;
   }
 
   void increaseEnergy(double eaten) {
     energy += eaten;
+  }
+
+  /// Increase child buffer max size
+  void grow(int amount) {
+    bufSize += amount;
   }
 }
