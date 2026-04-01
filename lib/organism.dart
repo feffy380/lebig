@@ -16,6 +16,7 @@ class Organism {
 
   // Heads
   int ip = 0; // instruction pointer
+  int flowHead = 0; // for jumps
   int readHead = 0;
   int writeHead = 0; // points to start of child buffer
 
@@ -28,15 +29,11 @@ class Organism {
   // if primary way of transferring energy to child, should it transfer more than 1? "gestation time" might be interesting consequence though
 
   // TODO: Reproduction
-  // - child buffer
-  // - read head at start of program
-  // - write head at start of child buffer
-  // - copy op that copies instruction under read head to write head, advances both
 
   /*
   # Replicator:
   h-search: set flow head
-  grow-buffer: grow child buffer by 1
+  grow: grow child buffer by 1
   h-copy: copy instruction from read head to write head, advance both
   if-n-label: label not copied
     nop template
@@ -105,6 +102,8 @@ class Organism {
         readHead = (readHead + 1) % program.length;
         writeHead++;
         bufSize--;
+      case Op.hSearch:
+        flowHead = findTemplate();
     }
 
     advanceIP();
@@ -125,5 +124,44 @@ class Organism {
   /// Increase child buffer max size
   void grow(int amount) {
     bufSize += amount;
+  }
+
+  /// Find complement of template following IP.
+  /// Returns the index of the end of the complement.
+  /// If no template follows, return IP
+  int findTemplate() {
+    int templateStart = (ip + 1) % program.length;
+    int len = getTemplateLen(templateStart);
+    int i = templateStart;
+    int j = (templateStart + len) % program.length;
+    while (j != templateStart) {
+      var tOp = program[i];
+      var cOp = program[j];
+
+      if (cOp == tOp.complement()) {
+        i = (i + 1) % program.length;
+        if (i == templateStart + len) {
+          // reached end of template, and therefore found a matching complement
+          return j;
+        }
+      } else {
+        i = templateStart;
+      }
+      j = (j + 1) % program.length;
+    }
+    // no match found
+    return ip;
+  }
+
+  /// Measure length of the template at a certain index
+  int getTemplateLen(int start) {
+    int n = 0;
+    int i = start;
+    while (program[i].isNop()) {
+      n++;
+      i = (i + 1) % program.length;
+      if (i == start) break;
+    }
+    return n;
   }
 }
