@@ -1,14 +1,14 @@
 enum Op {
   nopA, nopB, nopC,
-  move, // move forward
-  turnLeft, // rotate 60 degrees counterclockwise
-  turnRight, // rotate 60 degrees clockwise
-  turnRand, // turn left or right at random
-  eat, // eat from current cell to gain energy
-  grow, // use energy to increase child buffer size
-  hCopy, // copy instruction under read head to write head in child, advance both heads
-  hSearch, // search for complement of the template following this instruction and place the flow head after it
-  // if-not-label
+  move, // Move forward
+  turnLeft, // Rotate 60 degrees counterclockwise
+  turnRight, // Rotate 60 degrees clockwise
+  turnRand, // Turn left or right at random
+  eat, // Eat from current cell to gain energy
+  grow, // Use energy to increase child buffer size
+  hCopy, // Copy instruction under read head to write head in child, advance both heads
+  hSearch, // Search for complement of the template following this instruction and place the flow head after it
+  ifNotLabel, // Reads label and tests if its complement was just written. If so, skip the next instruction. We use the negation because unlike avida we don't reset on divide
   // jump to flow head
   // divide
   ;
