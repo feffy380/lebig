@@ -88,6 +88,23 @@ class Organism {
         world.requestEat(id);
       case Op.grow:
         world.requestGrow(id);
+      case Op.hCopy:
+        if (bufSize == 0) {
+          break;
+        }
+        // copy instruction
+        var copiedOp = program[readHead];
+        if (writeHead < childBuf.length) {
+          childBuf[writeHead] = copiedOp;
+        } else if (writeHead == childBuf.length) {
+          childBuf.add(copiedOp);
+        } else {
+          throw Exception("Invalid writeHead in Organism $id");
+        }
+        // advance heads
+        readHead = (readHead + 1) % program.length;
+        writeHead++;
+        bufSize--;
     }
 
     advanceIP();
