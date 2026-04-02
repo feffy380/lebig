@@ -104,16 +104,30 @@ class Organism {
         var (matchPos, templateLen) = findTemplate();
         // Move flow head to the end of the label instead of after it due to the final advanceIP() call after a jump
         flowHead = matchPos;
-        // For now, we choose to skip NOPs encountered as a label or modifier. They still consume a cycle when encountered as an instruction
+        // Skip NOPs encountered as a label or modifier. They still consume a cycle when encountered as an instruction
         advanceIP(templateLen);
       case Op.ifNotLabel:
-        // TODO: Handle this case.
-        // get template length
-        // find potential start of complement based on write head
-        // compare templates
-        // if match, skip next instruction (and template)
-        // else, run instruction after template
-        throw UnimplementedError();
+        // Get template length
+        int templateStart = (ip + 1) % program.length;
+        int len = getTemplateLen(templateStart);
+
+        // Compare templates
+        bool match = true;
+        if (writeHead - len < 0) {
+          match = false;
+        } else {
+          for (int i = 0; i < len; i++) {
+            var label = program[(templateStart + i) % program.length];
+            var target = childBuf[(writeHead - len + i) % childBuf.length];
+            if (label.complement() != target) {
+              match = false;
+              break;
+            }
+          }
+        }
+        advanceIP(len); // skip NOPs
+        // if matching label is found, skip the next instruction
+        if (match) advanceIP();
     }
 
     advanceIP();
