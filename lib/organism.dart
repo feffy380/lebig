@@ -128,6 +128,8 @@ class Organism {
         advanceIP(len); // skip NOPs
         // if matching label is found, skip the next instruction
         if (match) advanceIP();
+      case Op.moveHead:
+        ip = flowHead;
     }
 
     advanceIP();

@@ -9,7 +9,7 @@ enum Op {
   hCopy, // Copy instruction under read head to write head in child, advance both heads
   hSearch, // Search for complement of the template following this instruction and place the flow head after it
   ifNotLabel, // Reads label and tests if its complement was just written. If so, skip the next instruction. We use the negation because unlike avida we don't reset on divide
-  // jump to flow head
+  moveHead, // Move instruction pointer to flow head
   // divide
   ;
 
