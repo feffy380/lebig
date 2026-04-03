@@ -119,7 +119,7 @@ class Organism {
           for (int i = 0; i < len; i++) {
             var label = program[(templateStart + i) % program.length];
             var target = childBuf[(writeHead - len + i) % childBuf.length];
-            if (label.complement() != target) {
+            if (label.complement != target) {
               match = false;
               break;
             }
@@ -164,7 +164,7 @@ class Organism {
       var tOp = program[i];
       var cOp = program[j];
 
-      if (cOp == tOp.complement()) {
+      if (cOp == tOp.complement) {
         i = (i + 1) % program.length;
         if (i == templateStart + len) {
           // reached end of template, and therefore found a matching complement
@@ -183,7 +183,7 @@ class Organism {
   int getTemplateLen(int start) {
     int n = 0;
     int i = start;
-    while (program[i].isNop()) {
+    while (program[i].isNop) {
       n++;
       i = (i + 1) % program.length;
       if (i == start) break;

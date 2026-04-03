@@ -13,7 +13,7 @@ enum Op {
   // divide
   ;
 
-  bool isNop() {
+  bool get isNop {
     switch (this) {
       case nopA:
       case nopB:
@@ -24,7 +24,7 @@ enum Op {
     }
   }
 
-  Op complement() {
+  Op get complement {
     switch (this) {
       case nopA:
         return nopB;
