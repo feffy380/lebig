@@ -4,7 +4,7 @@ import 'package:lebig/world.dart';
 
 /// Digital organism consisting of virtual hardware and software
 class Organism {
-  final int id;
+  late final int id;
   final int color;
   double energy;
   Cube position;
@@ -22,9 +22,8 @@ class Organism {
 
   // child buffer
   List<Op> childBuf = [];
-  int bufSize = 0; // capacity must be increased by Grow instruction
-  // TODO: what happens to extra capacity? lost or transferred to child as energy?
-  // if primary way of transferring energy to child, should it transfer more than 1? "gestation time" might be interesting consequence though
+  // allocation must be increased by grow instruction. Excess allocation is given to the child as energy when it spawns
+  int allocated = 0;
 
   // TODO: Reproduction
 
@@ -46,7 +45,6 @@ class Organism {
   */
 
   Organism({
-    required this.id,
     required this.color,
     required this.energy,
     required this.position,
@@ -84,7 +82,7 @@ class Organism {
       case Op.grow:
         world.requestGrow(id);
       case Op.hCopy:
-        if (bufSize == 0) {
+        if (allocated == 0) {
           break;
         }
         // copy instruction
@@ -99,7 +97,7 @@ class Organism {
         // advance heads
         readHead = (readHead + 1) % program.length;
         writeHead++;
-        bufSize--;
+        allocated--;
       case Op.hSearch:
         var (matchPos, templateLen) = findTemplate();
         // Move flow head to the end of the label instead of after it due to the final advanceIP() call after a jump
@@ -130,6 +128,13 @@ class Organism {
         if (match) advanceIP();
       case Op.moveHead:
         ip = flowHead;
+      case Op.divide:
+        world.createOffspring(this);
+        // Reset heads and child buffer
+        readHead = 0;
+        writeHead = 0;
+        childBuf = [];
+        allocated = 0;
     }
 
     advanceIP();
@@ -149,7 +154,7 @@ class Organism {
 
   /// Increase child buffer max size
   void grow(int amount) {
-    bufSize += amount;
+    allocated += amount;
   }
 
   /// Find complement of template following IP.

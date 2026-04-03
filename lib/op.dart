@@ -10,7 +10,7 @@ enum Op {
   hSearch, // Search for complement of the template following this instruction and place the flow head after it
   ifNotLabel, // Reads label and tests if its complement was just written. If so, skip the next instruction. We use the negation because unlike avida we don't reset on divide
   moveHead, // Move instruction pointer to flow head
-  // divide
+  divide, // Split off child buffer into a new organism. Excess buffer capacity is given to the child as energy.
   ;
 
   bool get isNop {
