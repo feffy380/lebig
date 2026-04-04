@@ -18,14 +18,15 @@ class Organism {
   int readHead = 0;
   int writeHead = 0; // points to start of child buffer
 
-  // memory. registers or a stack or both
+  // memory. 2 stacks for Turing completeness
+  List<double> stackA = [];
+  List<double> stackB = [];
+  bool activeStackA = true;
 
   // child buffer
   List<Op> childBuf = [];
   // allocation must be increased by grow instruction. Excess allocation is given to the child as energy when it spawns
   int allocated = 0;
-
-  // TODO: Reproduction
 
   /*
   # Replicator:
@@ -54,8 +55,15 @@ class Organism {
 
   Op get curInst => program[ip];
 
+  List<double> get activeStack => activeStackA ? stackA : stackB;
+  List<double> get inactiveStack => activeStackA ? stackB : stackA;
+
   void advanceIP([int n = 1]) {
     ip = (ip + n) % program.length;
+  }
+
+  void switchStack() {
+    activeStackA = !activeStackA;
   }
 
   /// Execute a single instruction
@@ -135,6 +143,13 @@ class Organism {
         writeHead = 0;
         childBuf = [];
         allocated = 0;
+      case Op.swap:
+        switchStack();
+      case Op.transfer:
+        if (activeStack.isNotEmpty) {
+          var a = activeStack.removeLast();
+          inactiveStack.add(a);
+        }
     }
 
     advanceIP();
