@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hex_toolkit/hex_toolkit.dart';
+import 'package:lebig/ancestor.dart';
 import 'package:lebig/op.dart';
 import 'package:lebig/organism.dart';
 
@@ -57,24 +58,16 @@ class World {
       });
     }
 
-    // PLACEHOLDER: Fill world with randomly colored hexes
-    for (var i = 0; i < width; i++) {
-      for (var j = 0; j < height; j++) {
-        if (rng.nextDouble() > 0.1) {
-          continue;
-        }
-        // generate random program of length 10
-        var program = List.generate(10, (_) => Op.values[rng.nextInt(Op.values.length)]);
-        var org = Organism(
-          color: randRGB(rng),
-          energy: 100, // TODO: make initial energy configurable
-          position: GridOffset(i, j).toCube(),
-          rotation: Hex.zero().randomNeighbor().cube,
-          program: program,
-        );
-        addOrganism(org);
-      }
-    }
+    // Place single Ancestor in the middle
+    var program = List<Op>.from(ancestor);
+    var org = Organism(
+      color: 0xFFC41321,
+      energy: 100,
+      position: GridOffset((width / 2).toInt(), (height / 2).toInt()).toCube(),
+      rotation: Hex.zero().randomNeighbor().cube,
+      program: program,
+    );
+    addOrganism(org);
   }
 
   int genID() {
@@ -152,7 +145,8 @@ class World {
 
   void requestEat(int id) {
     var org = organisms[orgIndex[id]!];
-    var eatAmount = getExecCost(org) * eatCoeff;
+    // var eatAmount = getExecCost(org) * eatCoeff;
+    var eatAmount = readEnergy(org.position) / 2;
     var eaten = reduceEnergy(org.position, eatAmount);
     org.increaseEnergy(eaten);
   }
