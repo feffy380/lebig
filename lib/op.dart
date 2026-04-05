@@ -3,7 +3,7 @@ enum Op {
   move, // Move forward
   turnLeft, // Rotate 60 degrees counterclockwise
   turnRight, // Rotate 60 degrees clockwise
-  turnRand, // Turn left or right at random
+  turnRand, // Turn left or right at random. TODO: is this overpowered? it might trivialize foraging evolution
   eat, // Eat from current cell to gain energy
   grow, // Use energy to increase child buffer size
   hCopy, // Copy instruction under read head to write head in child, advance both heads
@@ -16,15 +16,17 @@ enum Op {
   genomeSize, // Push the program length to the stack
   energy, // Push current stored energy amount to the stack
   ifLess, // Pop two values A and B from the stack. Run the next instruction if B is less than A
+  // TODO: conditional jump to label? maybe as optional argument, where no argument means skip one instruction
   // TODO: separate comparisons from conditional jump. ifLess could be implemented as two instructions
   // TODO: constants 0-4
-  // TODO: arithmetic
+  // Arithmetic
   add,
   sub,
   mul,
   div,
   // TODO: logical
   // TODO: bitshift
+  // TODO: senses
   ;
 
   bool get isNop {

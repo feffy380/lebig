@@ -42,6 +42,8 @@ class Organism {
   List<double> get activeStack => useStackB ? stackB : stackA;
   List<double> get inactiveStack => useStackB ? stackA : stackB;
 
+  double get deathValue => energy + program.length + childBuf.length + allocated;
+
   void advanceIP([int n = 1]) {
     ip = (ip + n) % program.length;
   }
@@ -184,8 +186,10 @@ class Organism {
     if (energyCost < energy) {
       energy -= energyCost;
       return true;
+    } else {
+      energy = 0;
+      return false;
     }
-    return false;
   }
 
   void increaseEnergy(double eaten) {

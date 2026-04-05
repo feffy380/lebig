@@ -202,6 +202,9 @@ class World {
 
     // clear position
     positions.remove(org.position);
+
+    // Drop energy on death
+    placeEnergy(org.position, org.deathValue);
   }
 
   void requestGrow(int id) {
