@@ -62,7 +62,7 @@ class World {
     var program = List<Op>.from(ancestor);
     var org = Organism(
       color: 0xFFC41321,
-      energy: 100,
+      energy: 10_000,
       position: GridOffset((width / 2).toInt(), (height / 2).toInt()).toCube(),
       rotation: Hex.zero().randomNeighbor().cube,
       program: program,
