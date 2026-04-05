@@ -18,7 +18,8 @@ class Organism {
   int readHead = 0;
   int writeHead = 0; // points to start of child buffer
 
-  // memory. 2 stacks for Turing completeness
+  // Memory. 2 stacks for Turing completeness
+  // Popping from empty stack returns 0
   List<double> stackA = [];
   List<double> stackB = [];
   bool activeStackA = true;
@@ -64,6 +65,18 @@ class Organism {
 
   void switchStack() {
     activeStackA = !activeStackA;
+  }
+
+  void push(double a) {
+    activeStack.add(a);
+  }
+
+  double pop() {
+    if (activeStack.isEmpty) {
+      return 0.0;
+    } else {
+      return activeStack.removeLast();
+    }
   }
 
   /// Execute a single instruction
@@ -146,9 +159,17 @@ class Organism {
       case Op.swap:
         switchStack();
       case Op.transfer:
-        if (activeStack.isNotEmpty) {
-          var a = activeStack.removeLast();
-          inactiveStack.add(a);
+        inactiveStack.add(pop());
+      case Op.genomeSize:
+        push(program.length.toDouble());
+      case Op.energy:
+        push(energy);
+      case Op.ifLess:
+        // N1 N2 ifLess: 1 < 2 ? run next instruction
+        var a = pop();
+        var b = pop();
+        if (b >= a) { // condition false
+          advanceIP(); // skip instruction
         }
     }
 
