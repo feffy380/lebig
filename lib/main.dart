@@ -86,13 +86,17 @@ class HexPainter extends CustomPainter {
     // Set background
     canvas.drawRect(Rect.fromLTWH(-hexSize, -hexSize, gridW, gridH), Paint()..color = Colors.blueGrey);
 
+    // TODO: batch drawVertices
+    // TODO: eventually convert to atlas
     for (int i = 0; i < world.energyMap.length; i++) {
       double energy = world.energyMap[i];
+      double alpha = min(energy / 100, 1.0);
+      if (alpha < 0.05) continue;
+
       int x = i % world.width;
       int y = (i / world.width).toInt();
       Hex pos = Hex.fromOffset(GridOffset(x, y));
 
-      double alpha = min(energy / 100, 1.0);
       final energyPaint = Paint()..color = Color(0xFF00FF00).withValues(alpha: alpha);
       final vertices = pos
           .vertices(hexSize)
