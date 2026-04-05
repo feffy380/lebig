@@ -19,7 +19,12 @@ enum Op {
   // TODO: separate comparisons from conditional jump. ifLess could be implemented as two instructions
   // TODO: constants 0-4
   // TODO: arithmetic
+  add,
+  sub,
+  mul,
+  div,
   // TODO: logical
+  // TODO: bitshift
   ;
 
   bool get isNop {

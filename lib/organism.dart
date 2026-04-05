@@ -22,29 +22,12 @@ class Organism {
   // Popping from empty stack returns 0
   List<double> stackA = [];
   List<double> stackB = [];
-  bool activeStackA = true;
+  bool useStackB = false;
 
   // child buffer
   List<Op> childBuf = [];
   // allocation must be increased by grow instruction. Excess allocation is given to the child as energy when it spawns
   int allocated = 0;
-
-  /*
-  # Replicator:
-  h-search: set flow head
-  grow: grow child buffer by 1
-  h-copy: copy instruction from read head to write head, advance both
-  if-n-label: label not copied
-    nop template
-    jump to flow head
-  divide
-  nop template
-
-  Can h-copy and if-label be generalized? feels cheaty that h-copy can read, write, and advance two heads all at once.
-  But splitting it up would require storing instructions in regular memory, leading to the potential for writing arbitrary
-  values to the child buffer, which would need to be converted to instructions somehow.
-  We could just index into list of Ops modulo its length
-  */
 
   Organism({
     required this.color,
@@ -56,17 +39,18 @@ class Organism {
 
   Op get curInst => program[ip];
 
-  List<double> get activeStack => activeStackA ? stackA : stackB;
-  List<double> get inactiveStack => activeStackA ? stackB : stackA;
+  List<double> get activeStack => useStackB ? stackB : stackA;
+  List<double> get inactiveStack => useStackB ? stackA : stackB;
 
   void advanceIP([int n = 1]) {
     ip = (ip + n) % program.length;
   }
 
   void switchStack() {
-    activeStackA = !activeStackA;
+    useStackB = !useStackB;
   }
 
+  // TODO: limit size
   void push(double a) {
     activeStack.add(a);
   }
@@ -170,6 +154,26 @@ class Organism {
         var b = pop();
         if (b >= a) { // condition false
           advanceIP(); // skip instruction
+        }
+      case Op.add:
+        var a = pop();
+        var b = pop();
+        push(a + b);
+      case Op.sub:
+        var a = pop();
+        var b = pop();
+        push(b - a);
+      case Op.mul:
+        var a = pop();
+        var b = pop();
+        push(a * b);
+      case Op.div:
+        var a = pop();
+        var b = pop();
+        if (a == 0) {
+          push(1e6);
+        } else {
+          push(b / a);
         }
     }
 
