@@ -124,6 +124,7 @@ class HexPainter extends CustomPainter {
       currentHexes = 0;
     }
 
+    var hexVertOffsets = Hex.zero().vertices(hexSize);
     for (int i = 0; i < world.energyMap.length; i++) {
       double energy = world.energyMap[i];
       double alpha = min(energy / 100, 1.0);
@@ -135,18 +136,18 @@ class HexPainter extends CustomPainter {
       }
 
       int x = i % world.width;
-      int y = (i / world.width).toInt();
+      int y = i ~/ world.width;
       Hex pos = Hex.fromOffset(GridOffset(x, y));
 
       final color = Color.fromARGB((alpha * 255).toInt(), 0, 255, 0).toARGB32();
-      final vertices = pos.vertices(hexSize);
+      final hexCenter = pos.centerPoint(hexSize);
 
       int vBase = currentHexes * 6;
       int pBase = vBase * 2;
       int iBase = currentHexes * 12;
       for (int j = 0; j < 6; j++) {
-        positions[pBase + (j * 2)] = vertices[j].x;
-        positions[pBase + (j * 2) + 1] = vertices[j].y;
+        positions[pBase + (j * 2)] = hexCenter.x + hexVertOffsets[j].x;
+        positions[pBase + (j * 2) + 1] = hexCenter.y + hexVertOffsets[j].y;
         colors[vBase + j] = color;
 
       }
@@ -157,6 +158,7 @@ class HexPainter extends CustomPainter {
       currentHexes++;
     }
 
+    hexVertOffsets = Hex.zero().vertices(hexSize, padding: max(hexSize * 0.2, hexPadding));
     for (int i = 0; i < world.organisms.length; i++) {
       // vertex buffer can only hold 2**16 entries. flush when full
       if (currentHexes >= maxHexesPerBatch) {
@@ -166,14 +168,14 @@ class HexPainter extends CustomPainter {
       var org = world.organisms[i];
 
       final color = world.organisms[i].color;
-      final vertices = Hex.fromCube(org.position).vertices(hexSize);
+      final hexCenter = Hex.fromCube(org.position).centerPoint(hexSize);
 
       int vBase = currentHexes * 6;
       int pBase = vBase * 2;
       int iBase = currentHexes * 12;
       for (int j = 0; j < 6; j++) {
-        positions[pBase + (j * 2)] = vertices[j].x;
-        positions[pBase + (j * 2) + 1] = vertices[j].y;
+        positions[pBase + (j * 2)] = hexCenter.x + hexVertOffsets[j].x;
+        positions[pBase + (j * 2) + 1] = hexCenter.y + hexVertOffsets[j].y;
         colors[vBase + j] = color;
 
       }
@@ -196,6 +198,7 @@ class HexPainter extends CustomPainter {
     // base: ~105ms
     // Vertices.raw: ~20ms
     // hardcoded indexOffsets: ~15ms
+    // precalc hex vert offsets: ~13ms
   }
 
   @override
