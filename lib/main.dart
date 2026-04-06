@@ -137,10 +137,9 @@ class HexPainter extends CustomPainter {
 
       int x = i % world.width;
       int y = i ~/ world.width;
-      Hex pos = Hex.fromOffset(GridOffset(x, y));
 
-      final color = Color.fromARGB((alpha * 255).toInt(), 0, 255, 0).toARGB32();
-      final hexCenter = pos.centerPoint(hexSize);
+      final color = ((alpha * 255).toInt() << 24) | 0x00FF00;
+      final hexCenter = GridOffset(x, y).toCube().centerPoint(hexSize);
 
       int vBase = currentHexes * 6;
       int pBase = vBase * 2;
@@ -168,7 +167,7 @@ class HexPainter extends CustomPainter {
       var org = world.organisms[i];
 
       final color = world.organisms[i].color;
-      final hexCenter = Hex.fromCube(org.position).centerPoint(hexSize);
+      final hexCenter = org.position.centerPoint(hexSize);
 
       int vBase = currentHexes * 6;
       int pBase = vBase * 2;
@@ -199,6 +198,7 @@ class HexPainter extends CustomPainter {
     // Vertices.raw: ~20ms
     // hardcoded indexOffsets: ~15ms
     // precalc hex vert offsets: ~13ms
+    // create ARGB32 directly: ~12ms
   }
 
   @override
