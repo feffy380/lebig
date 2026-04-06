@@ -90,9 +90,8 @@ class HexPainter extends CustomPainter {
     // Set background
     canvas.drawRect(Rect.fromLTWH(-hexSize, -hexSize, gridW, gridH), Paint()..color = Colors.blueGrey);
 
-    // TODO: eventually convert to atlas
     // Preallocate buffers
-    const int maxHexesPerBatch = 10_000; // safely below 2**16 vertices
+    const int maxHexesPerBatch = 512; // higher causes wasm to complain
     final int maxVertices = maxHexesPerBatch * 6;
     final int maxIndices = maxHexesPerBatch * 12; // 4 triangles x 3 vertices
 
@@ -110,7 +109,7 @@ class HexPainter extends CustomPainter {
     int currentHexes = 0;
 
     Paint p = Paint();
-    void flushBatch(canvas) {
+    void flushBatch(Canvas canvas) {
       canvas.drawVertices(
         Vertices.raw(
           VertexMode.triangles,
