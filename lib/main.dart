@@ -41,7 +41,7 @@ class _SimScreenState extends State<SimScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = SimController(world: World(width: 60, height: 40, rng: Random()))..start();
+    _controller = SimController(world: World(width: 60*10, height: 40*10, rng: Random()))..start();
   }
 
   @override
@@ -70,6 +70,8 @@ class HexPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final stopwatch = Stopwatch()..start();
+
     canvas.save();
 
     // scale grid to fill canvas
@@ -86,9 +88,36 @@ class HexPainter extends CustomPainter {
     // Set background
     canvas.drawRect(Rect.fromLTWH(-hexSize, -hexSize, gridW, gridH), Paint()..color = Colors.blueGrey);
 
-    // TODO: batch drawVertices
     // TODO: eventually convert to atlas
+    var positions = <Offset>[];
+    var colors = <Color>[];
+    var indices = <int>[];
+    int n = 0;
+
+    Paint p = Paint();
+    void flushBatch() {
+      canvas.drawVertices(
+        Vertices(
+          VertexMode.triangles,
+          positions,
+          colors: colors,
+          indices: indices,
+        ),
+        BlendMode.dst,
+        p,
+      );
+      positions = [];
+      colors = [];
+      indices = [];
+      n = 0;
+    }
+
     for (int i = 0; i < world.energyMap.length; i++) {
+      // vertex buffer can only hold 2**16 entries. flush when full
+      if (positions.length + 6 >= (1<<16)) {
+        flushBatch();
+      }
+
       double energy = world.energyMap[i];
       double alpha = min(energy / 100, 1.0);
       if (alpha < 0.05) continue;
@@ -97,32 +126,54 @@ class HexPainter extends CustomPainter {
       int y = (i / world.width).toInt();
       Hex pos = Hex.fromOffset(GridOffset(x, y));
 
-      final energyPaint = Paint()..color = Color(0xFF00FF00).withValues(alpha: alpha);
-      final vertices = pos
-          .vertices(hexSize)
-          .map((e) => Offset(e.x, e.y))
-          .toList();
-      canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, energyPaint);
+      final color = const Color(0xFF00FF00).withValues(alpha: alpha);
+
+      pos.vertices(hexSize).forEach((v) {
+        positions.add(Offset(v.x, v.y));
+        colors.add(color);
+      });
+      indices.addAll([
+        n + 0, n + 1, n + 2,
+        n + 0, n + 2, n + 3,
+        n + 0, n + 3, n + 4,
+        n + 0, n + 4, n + 5,
+      ]);
+      n += 6;
     }
+    flushBatch();
 
     for (int i = 0; i < world.organisms.length; i++) {
+      // vertex buffer can only hold 2**16 entries. flush when full
+      if (positions.length + 6 >= (1<<16)) {
+        flushBatch();
+      }
+
       var org = world.organisms[i];
 
       final hex = Hex.fromCube(org.position);
-      final paint = Paint()..color = Color(world.organisms[i].color);
+      final color = Color(world.organisms[i].color);
 
-      // Get vertices ...
-      var vertices = hex
-          .vertices(hexSize, padding: max(hexSize * 0.2, hexPadding))
-          .map((e) => Offset(e.x, e.y))
-          .toList();
-
-      // ... and draw them
-      canvas.drawVertices(Vertices(VertexMode.triangleFan, vertices), BlendMode.srcOver, paint);
+      int n = positions.length;
+      hex.vertices(hexSize, padding: max(hexSize * 0.2, hexPadding)).forEach((v) {
+        positions.add(Offset(v.x, v.y));
+        colors.add(color);
+      });
+      indices.addAll([
+        n + 0, n + 1, n + 2,
+        n + 0, n + 2, n + 3,
+        n + 0, n + 3, n + 4,
+        n + 0, n + 4, n + 5,
+      ]);
 
       // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
     }
+    flushBatch();
+
     canvas.restore();
+
+    // Rate limit
+    final elapsed = stopwatch.elapsedMilliseconds;
+    print("\b\b\b\b\b${elapsed}ms"); // 105ms
   }
 
   @override

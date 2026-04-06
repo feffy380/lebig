@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lebig/world.dart';
 
@@ -6,6 +7,7 @@ class SimController extends ChangeNotifier {
   final World _world;
   var tickRate = 60.0;  // updates per second
   var _isRunning = false;
+  var _frameRequested = false;
 
   SimController({required World world}) : _world = world;
 
@@ -19,8 +21,14 @@ class SimController extends ChangeNotifier {
       // Tick
       _world.step();
 
-      // Update UI
-      notifyListeners();
+      // Update UI once per vsync
+      if (!_frameRequested) {
+        _frameRequested = true;
+        SchedulerBinding.instance.scheduleFrameCallback((_) {
+          notifyListeners();
+          _frameRequested = false;
+        });
+      }
 
       // Rate limit
       final elapsed = stopwatch.elapsedMilliseconds;
