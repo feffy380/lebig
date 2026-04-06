@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/sim_controller.dart';
@@ -89,91 +91,109 @@ class HexPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(-hexSize, -hexSize, gridW, gridH), Paint()..color = Colors.blueGrey);
 
     // TODO: eventually convert to atlas
-    var positions = <Offset>[];
-    var colors = <Color>[];
-    var indices = <int>[];
-    int n = 0;
+    // Preallocate buffers
+    const int maxHexesPerBatch = 10_000; // safely below 2**16 vertices
+    final int maxVertices = maxHexesPerBatch * 6;
+    final int maxIndices = maxHexesPerBatch * 12; // 4 triangles x 3 vertices
+
+    var positions = Float32List(maxVertices * 2); // x, y per vertex
+    var colors = Int32List(maxVertices);
+    var indices = Uint16List(maxIndices);
+
+    int currentHexes = 0;
 
     Paint p = Paint();
-    void flushBatch() {
+    void flushBatch(canvas) {
       canvas.drawVertices(
-        Vertices(
+        Vertices.raw(
           VertexMode.triangles,
-          positions,
-          colors: colors,
-          indices: indices,
+          positions.sublist(0, currentHexes * 6 * 2),
+          colors: colors.sublist(0, currentHexes * 6),
+          indices: indices.sublist(0, currentHexes * 12),
         ),
         BlendMode.dst,
         p,
       );
-      positions = [];
-      colors = [];
-      indices = [];
-      n = 0;
+      currentHexes = 0;
     }
 
     for (int i = 0; i < world.energyMap.length; i++) {
-      // vertex buffer can only hold 2**16 entries. flush when full
-      if (positions.length + 6 >= (1<<16)) {
-        flushBatch();
-      }
-
       double energy = world.energyMap[i];
       double alpha = min(energy / 100, 1.0);
       if (alpha < 0.05) continue;
+
+      // vertex buffer can only hold 2**16 entries. flush when full
+      if (currentHexes >= maxHexesPerBatch) {
+        flushBatch(canvas);
+      }
 
       int x = i % world.width;
       int y = (i / world.width).toInt();
       Hex pos = Hex.fromOffset(GridOffset(x, y));
 
-      final color = const Color(0xFF00FF00).withValues(alpha: alpha);
+      final color = Color.fromARGB((alpha * 255).toInt(), 0, 255, 0).toARGB32();
+      final vertices = pos.vertices(hexSize);
 
-      pos.vertices(hexSize).forEach((v) {
-        positions.add(Offset(v.x, v.y));
-        colors.add(color);
-      });
-      indices.addAll([
-        n + 0, n + 1, n + 2,
-        n + 0, n + 2, n + 3,
-        n + 0, n + 3, n + 4,
-        n + 0, n + 4, n + 5,
+      int vBase = currentHexes * 6;
+      int pBase = vBase * 2;
+      int iBase = currentHexes * 12;
+      for (int j = 0; j < 6; j++) {
+        positions[pBase + (j * 2)] = vertices[j].x;
+        positions[pBase + (j * 2) + 1] = vertices[j].y;
+        colors[vBase + j] = color;
+
+      }
+      indices.setAll(iBase, [
+        vBase + 0, vBase + 1, vBase + 2,
+        vBase + 0, vBase + 2, vBase + 3,
+        vBase + 0, vBase + 3, vBase + 4,
+        vBase + 0, vBase + 4, vBase + 5,
       ]);
-      n += 6;
+
+      currentHexes++;
     }
-    flushBatch();
 
     for (int i = 0; i < world.organisms.length; i++) {
       // vertex buffer can only hold 2**16 entries. flush when full
-      if (positions.length + 6 >= (1<<16)) {
-        flushBatch();
+      if (currentHexes >= maxHexesPerBatch) {
+        flushBatch(canvas);
       }
 
       var org = world.organisms[i];
 
-      final hex = Hex.fromCube(org.position);
-      final color = Color(world.organisms[i].color);
+      final color = world.organisms[i].color;
+      final vertices = Hex.fromCube(org.position).vertices(hexSize);
 
-      int n = positions.length;
-      hex.vertices(hexSize, padding: max(hexSize * 0.2, hexPadding)).forEach((v) {
-        positions.add(Offset(v.x, v.y));
-        colors.add(color);
-      });
-      indices.addAll([
-        n + 0, n + 1, n + 2,
-        n + 0, n + 2, n + 3,
-        n + 0, n + 3, n + 4,
-        n + 0, n + 4, n + 5,
+      int vBase = currentHexes * 6;
+      int pBase = vBase * 2;
+      int iBase = currentHexes * 12;
+      for (int j = 0; j < 6; j++) {
+        positions[pBase + (j * 2)] = vertices[j].x;
+        positions[pBase + (j * 2) + 1] = vertices[j].y;
+        colors[vBase + j] = color;
+
+      }
+      indices.setAll(iBase, [
+        vBase + 0, vBase + 1, vBase + 2,
+        vBase + 0, vBase + 2, vBase + 3,
+        vBase + 0, vBase + 3, vBase + 4,
+        vBase + 0, vBase + 4, vBase + 5,
       ]);
 
-      // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
+      currentHexes++;
     }
-    flushBatch();
+    // TODO: some way to indicate rotation. maybe 2 dots to represent eyes?
+    flushBatch(canvas);
 
     canvas.restore();
 
     // Rate limit
     final elapsed = stopwatch.elapsedMilliseconds;
-    print("\b\b\b\b\b${elapsed}ms"); // 105ms
+    if (kDebugMode) {
+      print("${elapsed}ms");
+    }
+    // base: 105ms
+    // Vertices.raw: 20ms
   }
 
   @override
