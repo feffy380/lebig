@@ -100,6 +100,13 @@ class HexPainter extends CustomPainter {
     var colors = Int32List(maxVertices);
     var indices = Uint16List(maxIndices);
 
+    const indexOffsets = [
+      0, 1, 2,
+      0, 2, 3,
+      0, 3, 4,
+      0, 4, 5,
+    ];
+
     int currentHexes = 0;
 
     Paint p = Paint();
@@ -143,12 +150,9 @@ class HexPainter extends CustomPainter {
         colors[vBase + j] = color;
 
       }
-      indices.setAll(iBase, [
-        vBase + 0, vBase + 1, vBase + 2,
-        vBase + 0, vBase + 2, vBase + 3,
-        vBase + 0, vBase + 3, vBase + 4,
-        vBase + 0, vBase + 4, vBase + 5,
-      ]);
+      for (int j = 0; j < indexOffsets.length; j++) {
+        indices[iBase + j] = vBase + indexOffsets[j];
+      }
 
       currentHexes++;
     }
@@ -173,12 +177,9 @@ class HexPainter extends CustomPainter {
         colors[vBase + j] = color;
 
       }
-      indices.setAll(iBase, [
-        vBase + 0, vBase + 1, vBase + 2,
-        vBase + 0, vBase + 2, vBase + 3,
-        vBase + 0, vBase + 3, vBase + 4,
-        vBase + 0, vBase + 4, vBase + 5,
-      ]);
+      for (int j = 0; j < indexOffsets.length; j++) {
+        indices[iBase + j] = vBase + indexOffsets[j];
+      }
 
       currentHexes++;
     }
@@ -192,8 +193,9 @@ class HexPainter extends CustomPainter {
     if (kDebugMode) {
       print("${elapsed}ms");
     }
-    // base: 105ms
-    // Vertices.raw: 20ms
+    // base: ~105ms
+    // Vertices.raw: ~20ms
+    // hardcoded indexOffsets: ~15ms
   }
 
   @override
