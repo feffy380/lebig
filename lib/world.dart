@@ -145,8 +145,7 @@ class World {
 
   void requestEat(int id) {
     var org = organisms[orgIndex[id]!];
-    // var eatAmount = getExecCost(org) * eatCoeff;
-    var eatAmount = readEnergy(org.position) / 2;
+    var eatAmount = max(readEnergy(org.position) / 2, getExecCost(org) * 2);
     var eaten = reduceEnergy(org.position, eatAmount);
     org.increaseEnergy(eaten);
   }
