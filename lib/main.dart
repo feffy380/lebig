@@ -114,9 +114,9 @@ class HexPainter extends CustomPainter {
       canvas.drawVertices(
         Vertices.raw(
           VertexMode.triangles,
-          positions.sublist(0, currentHexes * 6 * 2),
-          colors: colors.sublist(0, currentHexes * 6),
-          indices: indices.sublist(0, currentHexes * 12),
+          Float32List.sublistView(positions, 0, currentHexes * 6 * 2),
+          colors: Int32List.sublistView(colors, 0, currentHexes * 6),
+          indices: Uint16List.sublistView(indices, 0, currentHexes * 12),
         ),
         BlendMode.dst,
         p,
@@ -199,6 +199,8 @@ class HexPainter extends CustomPainter {
     // hardcoded indexOffsets: ~15ms
     // precalc hex vert offsets: ~13ms
     // create ARGB32 directly: ~12ms
+    // sublistView: ~9.5ms
+    // release mode: ~7.7ms
   }
 
   @override
