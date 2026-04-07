@@ -40,6 +40,13 @@ class Organism {
   Op get curInst => program[ip];
 
   List<double> get activeStack => useStackB ? stackB : stackA;
+  set activeStack(List<double> newStack) {
+    if (useStackB) {
+      stackB = newStack;
+    } else {
+      stackA = newStack;
+    }
+  }
   List<double> get inactiveStack => useStackB ? stackA : stackB;
 
   double get deathValue => energy + program.length + childBuf.length + allocated;
@@ -54,9 +61,11 @@ class Organism {
     useStackB = !useStackB;
   }
 
-  // TODO: limit size
   void push(double a) {
     activeStack.add(a);
+    if (activeStack.length > 128) {
+      activeStack = activeStack.sublist(activeStack.length ~/ 2);
+    }
   }
 
   double pop() {

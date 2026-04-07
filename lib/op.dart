@@ -29,6 +29,7 @@ enum Op {
   // TODO: logical
   // TODO: bitshift
   // TODO: senses
+  // TODO: attack
   ;
 
   bool get isNop {
