@@ -159,6 +159,13 @@ class Organism {
         if (b >= a) { // condition false
           advanceIP(); // skip instruction
         }
+      case Op.ifGreater:
+        // N1 N2 ifGreater: 1 > 2 ? run next instruction
+        var a = pop();
+        var b = pop();
+        if (b <= a) { // condition false
+          advanceIP(); // skip instruction
+        }
       case Op.add:
         var a = pop();
         var b = pop();
@@ -179,6 +186,16 @@ class Organism {
         } else {
           push(b / a);
         }
+      case Op.n0:
+        push(0);
+      case Op.n1:
+        push(1);
+      case Op.n2:
+        push(2);
+      case Op.n3:
+        push(3);
+      case Op.n4:
+        push(4);
     }
 
     advanceIP();

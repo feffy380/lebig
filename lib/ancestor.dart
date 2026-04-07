@@ -33,18 +33,18 @@ const List<Op> ancestor = [
   Op.nopC,
   Op.nopC,
   Op.nopC,
+  Op.nopC,
+  Op.nopC,
 
   // check if enough energy
+  Op.genomeSize,
+  Op.n3,
+  Op.mul,
   Op.energy,
-  Op.genomeSize,
-  Op.genomeSize,
-  Op.genomeSize,
-  Op.add,
-  Op.add,
   Op.hSearch,
     Op.nopC,
     Op.nopA,
-  Op.ifLess, // if energy < genomeSize + genomeSize, skip replication loop
+  Op.ifGreater, // if 3*genomeSize > energy, skip replication loop
     Op.moveHead,
 
   // replication loop

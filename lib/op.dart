@@ -16,9 +16,11 @@ enum Op {
   genomeSize, // Push the program length to the stack
   energy, // Push current stored energy amount to the stack
   ifLess, // Pop two values A and B from the stack. Run the next instruction if B is less than A
+  ifGreater, // Pop two values A and B from the stack. Run the next instruction if B is greater than A
   // TODO: conditional jump to label? maybe as optional argument, where no argument means skip one instruction
   // TODO: separate comparisons from conditional jump. ifLess could be implemented as two instructions
-  // TODO: constants 0-4
+  // Constants
+  n0, n1, n2, n3, n4,
   // Arithmetic
   add,
   sub,
