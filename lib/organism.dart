@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/op.dart';
 import 'package:lebig/world.dart';
@@ -45,6 +43,8 @@ class Organism {
   List<double> get inactiveStack => useStackB ? stackA : stackB;
 
   double get deathValue => energy + program.length + childBuf.length + allocated;
+
+  bool get isAlive => energy > 0;
 
   void advanceIP([int n = 1]) {
     ip = (ip + n) % program.length;
@@ -101,7 +101,7 @@ class Organism {
         } else if (writeHead == childBuf.length) {
           childBuf.add(copiedOp);
         } else {
-          throw Exception("Invalid writeHead in Organism $id");
+          throw StateError("Invalid writeHead in Organism $id");
         }
         // advance heads
         readHead = (readHead + 1) % program.length;
@@ -184,10 +184,12 @@ class Organism {
     advanceIP();
   }
 
-  double reduceEnergy(double energyCost) {
-    var energyUsed = min(energyCost, energy);
-    energy -= energyUsed;
-    return energyUsed;
+  bool reduceEnergy(double energyCost) {
+    if (energyCost > energy) {
+      return false;
+    }
+    energy -= energyCost;
+    return true;
   }
 
   void increaseEnergy(double eaten) {

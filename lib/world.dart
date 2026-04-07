@@ -128,10 +128,14 @@ class World {
 
       // Pay energy cost
       double energyCost = getExecCost(org);
-      // Death
-      var energyUsed = org.reduceEnergy(energyCost);
-      energySpawnBudget += energyUsed;
-      if (org.energy == 0.0) {
+      bool costPaid = org.reduceEnergy(energyCost);
+      if (costPaid) {
+        energySpawnBudget += energyCost;
+        org.execute(this);
+      }
+
+      // Death - cost not paid or energy reached 0
+      if (!costPaid || !org.isAlive || org.energy < _energyCostFloor) {
         removeOrganism(org.id);
 
         // recalc weights
@@ -148,8 +152,6 @@ class World {
 
         continue;
       }
-
-      org.execute(this);
 
       // recalc weights
       if (prefixSum.length < organisms.length) {
@@ -257,7 +259,7 @@ class World {
 
   void requestGrow(int id) {
     var org = organisms[orgIndex[id]!];
-    if (org.reduceEnergy(1) == 1) {
+    if (org.reduceEnergy(1)) {
       org.grow(1);
     }
   }
