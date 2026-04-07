@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/op.dart';
 import 'package:lebig/world.dart';
@@ -182,14 +184,10 @@ class Organism {
     advanceIP();
   }
 
-  bool reduceEnergy(double energyCost) {
-    if (energyCost < energy) {
-      energy -= energyCost;
-      return true;
-    } else {
-      energy = 0;
-      return false;
-    }
+  double reduceEnergy(double energyCost) {
+    var energyUsed = min(energyCost, energy);
+    energy -= energyUsed;
+    return energyUsed;
   }
 
   void increaseEnergy(double eaten) {

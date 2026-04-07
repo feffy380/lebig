@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hex_toolkit/hex_toolkit.dart';
 import 'package:lebig/sim_controller.dart';
@@ -43,7 +42,7 @@ class _SimScreenState extends State<SimScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = SimController(world: World(width: 60*10, height: 40*10, rng: Random()))..start();
+    _controller = SimController(world: World(width: 100, height: 100, rng: Random()))..start();
   }
 
   @override

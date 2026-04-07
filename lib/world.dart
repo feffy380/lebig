@@ -23,14 +23,15 @@ class World {
 
   // Energy model
   late List<double> energyMap;
+  double energySpawnBudget = 0.0;
   // Under these settings an organism starting with 100 energy runs for
   // ~3300 cycles which feels reasonable.
   // Might need to reduce since they'll get scheduled less often.
   // Maybe make min drain constant so organisms eventually die if they never get scheduled?
   // Could even make min drain controllable by organisms: treat as multiplier added to base of 1 for scheduling priority
-  double energyDrainCoeff = 1 / 1000;
-  double energyCostFloor = 0.01;
-  double eatCoeff = 10;
+  // Ultimately I don't want to incentivize code efficiency at the expense of behavioral complexity
+  final double _energyDrainCoeff = 1 / 1000;
+  final double _energyCostFloor = 0.01;
 
   // Mutation rates - based on Avida defaults
   double copyMutProb = 0.0075; // Mutation rate per hCopy
@@ -89,6 +90,20 @@ class World {
 
   /// Update simulation state
   void step() {
+    // Scatter energy to keep things going
+    // TODO: I'd love to replace this with autotrophs like in the Life Engine
+    for (; energySpawnBudget >= 110; energySpawnBudget -= 110) {
+      var offset = GridOffset(rng.nextInt(width), rng.nextInt(height));
+      var patchMid = Hex.fromOffset(offset);
+      // add 50 energy to cell
+      placeEnergy(patchMid.cube, 50);
+      // add 10 energy to neighbors
+      patchMid.neighbors().forEach((neighbor) {
+        var wrappedPos = wrapPosition(neighbor.cube);
+        placeEnergy(wrappedPos, 10);
+      });
+    }
+
     // stochastic scheduling
     // TODO: weighting based on energy levels. stochastic acceptance
     var updates = organisms.length;
@@ -99,20 +114,20 @@ class World {
       // Pay energy cost
       double energyCost = getExecCost(org);
       // Death
-      if (!org.reduceEnergy(energyCost)) {
+      var energyUsed = org.reduceEnergy(energyCost);
+      energySpawnBudget += energyUsed;
+      if (org.energy == 0.0) {
         removeOrganism(org.id);
         continue;
       }
 
       org.execute(this);
-
-      // TODO: scatter some energy to keep things alive (how much?)
     }
     timestep++;
   }
 
   double getExecCost(Organism org) {
-    var energyCost = energyCostFloor + org.energy * energyDrainCoeff;
+    var energyCost = _energyCostFloor + org.energy * _energyDrainCoeff;
     return energyCost;
   }
 
@@ -202,7 +217,7 @@ class World {
 
   void requestGrow(int id) {
     var org = organisms[orgIndex[id]!];
-    if (org.reduceEnergy(1)) {
+    if (org.reduceEnergy(1) == 1) {
       org.grow(1);
     }
   }
@@ -263,20 +278,25 @@ class World {
     }
 
     // Find random empty neighbor cell to place child
-    var dest = Hex.fromCube(
-      parent.position,
-    ).randomNeighborWhere((hex) => !positions.containsKey(hex.cube));
-    // If no empty cell, replace contents of a random neighbor
-    if (dest == null) {
-      dest = Hex.fromCube(parent.position).randomNeighbor();
-      dest = Hex.fromCube(wrapPosition(dest.cube));
-      removeOrganism(positions[dest.cube]!.id);
+    var neighbors = Hex.fromCube(parent.position).neighbors();
+    neighbors.shuffle(rng);
+    var dest = wrapPosition(
+      neighbors
+          .firstWhere(
+            (hex) => !positions.containsKey(wrapPosition(hex.cube)),
+            orElse: () => neighbors[0],
+          )
+          .cube,
+    );
+    // Forcibly replace a neighbor if we can't find an empty adjacent cell
+    if (positions.containsKey(dest)) {
+      removeOrganism(positions[dest]!.id);
     }
 
     var child = Organism(
       color: color.toARGB32(),
       energy: energy,
-      position: dest.cube,
+      position: dest,
       rotation: Hex.zero().randomNeighbor().cube,
       program: childProgram,
     );
