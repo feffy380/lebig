@@ -42,7 +42,8 @@ class World {
 
   World({required this.width, required this.height, required this.rng}) {
     // seed hex_toolkit
-    setRandomSeed(rng.nextInt(1<<32));
+    var hexSeed = (rng.nextInt(1<<16) << 16) | rng.nextInt(1<<16); // workaround for web target
+    setRandomSeed(hexSeed);
 
     // Scatter patches of energy around the map
     energyMap = List.filled(width * height, 0);

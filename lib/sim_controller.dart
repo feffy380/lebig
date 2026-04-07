@@ -22,6 +22,7 @@ class SimController extends ChangeNotifier {
       _world.step();
 
       // Update UI once per vsync
+      // TODO: find a better solution. seems to freeze UI after a while
       if (!_frameRequested) {
         _frameRequested = true;
         SchedulerBinding.instance.scheduleFrameCallback((_) {
