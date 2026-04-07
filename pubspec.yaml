@@ -1,7 +1,8 @@
 name: lebig
 description: "Artificial life simulation inspired by Avida."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.1
+homepage: https://github.com/feffy380/lebig
 
 environment:
   sdk: ^3.11.1
