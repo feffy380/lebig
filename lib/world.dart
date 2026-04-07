@@ -61,10 +61,12 @@ class World {
     }
 
     // Place single Ancestor in the middle
+    double initialEnergy = 10_000;
+    energySpawnBudget -= initialEnergy;
     var program = List<Op>.from(ancestor);
     var org = Organism(
       color: 0xFFC41321,
-      energy: 10_000,
+      energy: initialEnergy,
       position: GridOffset((width / 2).toInt(), (height / 2).toInt()).toCube(),
       rotation: Hex.zero().randomNeighbor().cube,
       program: program,
@@ -105,11 +107,23 @@ class World {
       });
     }
 
+    if (organisms.isEmpty) {
+      timestep++;
+      return;
+    }
+
     // stochastic scheduling
-    // TODO: weighting based on energy levels. stochastic acceptance
+    // weighting based on energy levels. cumulative sum + binary search
+    var prefixSum = <double>[];
+    prefixSum.add(organisms[0].energy);
+    for (int i = 1; i < organisms.length; i++) {
+      prefixSum.add(prefixSum[i-1] + organisms[i].energy);
+    }
+
     var updates = organisms.length;
     for (int i = 0; i < updates; i++) {
-      var idx = rng.nextInt(organisms.length);
+      var val = rng.nextDouble() * prefixSum.last;
+      var idx = binarySearch(prefixSum, val);
       var org = organisms[idx];
 
       // Pay energy cost
@@ -119,10 +133,35 @@ class World {
       energySpawnBudget += energyUsed;
       if (org.energy == 0.0) {
         removeOrganism(org.id);
+
+        // recalc weights
+        prefixSum.removeAt(idx);
+        if (idx < prefixSum.length) {
+          prefixSum[idx] = organisms[idx].energy;
+          if (idx > 0) {
+            prefixSum[idx] += prefixSum[idx-1];
+          }
+          for (int j = idx + 1; j < organisms.length; j++) {
+            prefixSum[j] = prefixSum[j-1] + organisms[j].energy;
+          }
+        }
+
         continue;
       }
 
       org.execute(this);
+
+      // recalc weights
+      if (prefixSum.length < organisms.length) {
+        prefixSum.add(0);
+      }
+      prefixSum[idx] = organisms[idx].energy;
+      if (idx > 0) {
+        prefixSum[idx] += prefixSum[idx-1];
+      }
+      for (int j = idx + 1; j < organisms.length; j++) {
+        prefixSum[j] = prefixSum[j-1] + organisms[j].energy;
+      }
     }
     timestep++;
   }
@@ -251,7 +290,7 @@ class World {
       childProgram.insert(pos, op);
     }
     // Delete mutation - delete 1 instruction at random
-    if (childProgram.isNotEmpty && rng.nextDouble() < divideDelProb) {
+    if (childProgram.isNotEmpty && (rng.nextDouble() < divideDelProb)) {
       childProgram.removeAt(rng.nextInt(childProgram.length));
       // Empty program is lethal
       if (childProgram.isEmpty) {
@@ -308,4 +347,20 @@ class World {
 /// Return int with random RGB hexcode in the lower 24 bits
 int randRGB(Random rng) {
   return (rng.nextDouble() * 0xFFFFFF).toInt() | 0xFF000000;
+}
+
+/// Find index of next largest value in sorted list
+int binarySearch(List<double> data, double val) {
+  int lo = 0;
+  int hi = data.length - 1;
+  while (lo < hi) {
+    int mid = (lo + hi) ~/ 2;
+    if (val > data[mid]) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  assert(lo < data.length);
+  return lo;
 }
