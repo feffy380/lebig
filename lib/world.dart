@@ -47,14 +47,14 @@ class World {
     energyMap = List.filled(width * height, 0);
     var numPatches = (width / 4).toInt() * (height / 4).toInt();
     for (int i = 0; i < numPatches; i++) {
-      // Generate at least 1 away from edges to avoid neighbors going out of bounds
-      var offset = GridOffset(1 + rng.nextInt(width - 2), 1 + rng.nextInt(height - 2));
+      var offset = GridOffset(rng.nextInt(width), rng.nextInt(height));
       var patchMid = Hex.fromOffset(offset);
       // add 50 energy to cell
       placeEnergy(patchMid.cube, 50);
       // add 10 energy to neighbors
       patchMid.neighbors().forEach((neighbor) {
-        placeEnergy(neighbor.cube, 10);
+        var wrappedPos = wrapPosition(neighbor.cube);
+        placeEnergy(wrappedPos, 10);
       });
     }
 

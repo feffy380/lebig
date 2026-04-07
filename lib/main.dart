@@ -72,8 +72,6 @@ class HexPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final stopwatch = Stopwatch()..start();
-
     canvas.save();
 
     // scale grid to fill canvas
@@ -187,19 +185,6 @@ class HexPainter extends CustomPainter {
     flushBatch(canvas);
 
     canvas.restore();
-
-    // Rate limit
-    final elapsed = stopwatch.elapsedMilliseconds;
-    if (kDebugMode) {
-      print("${elapsed}ms");
-    }
-    // base: ~105ms
-    // Vertices.raw: ~20ms
-    // hardcoded indexOffsets: ~15ms
-    // precalc hex vert offsets: ~13ms
-    // create ARGB32 directly: ~12ms
-    // sublistView: ~9.5ms
-    // release mode: ~7.7ms
   }
 
   @override
