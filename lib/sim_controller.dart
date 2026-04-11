@@ -5,13 +5,17 @@ import 'package:lebig/world.dart';
 /// Advance world state and notify UI
 class SimController extends ChangeNotifier {
   final World _world;
+  static const double _defaultTickRate = 100.0;
   double tickRate = 100.0;  // updates per second
-  var _isRunning = false;
-  var _frameRequested = false;
+  bool _isRunning = false;
+  bool _frameRequested = false;
+  bool _fastForward = false;
 
   SimController({required World world}) : _world = world;
 
   World get world => _world;
+  bool get isRunning => _isRunning;
+  bool get fastForward => _fastForward;
 
   void start() async {
     _isRunning = true;
@@ -22,7 +26,7 @@ class SimController extends ChangeNotifier {
       _world.step();
 
       // Update UI once per vsync
-      // TODO: find a better solution. seems to freeze UI after a while
+      // TODO: find a better solution. sometimes fast forward freezes UI
       if (!_frameRequested) {
         _frameRequested = true;
         SchedulerBinding.instance.scheduleFrameCallback((_) {
@@ -45,5 +49,10 @@ class SimController extends ChangeNotifier {
 
   void stop() {
     _isRunning = false;
+  }
+
+  void toggleFastForward() {
+    tickRate = _fastForward ? _defaultTickRate : double.infinity;
+    _fastForward = !_fastForward;
   }
 }

@@ -18,13 +18,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'lebig',
-      home: Scaffold(
-        // Placeholder hexes in the middle
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SimScreen(),
-        ),
-      ),
+      home: SimScreen(),
     );
   }
 }
@@ -53,12 +47,43 @@ class _SimScreenState extends State<SimScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _controller,
-      builder: (context, child) => CustomPaint(
-        painter: HexPainter(_controller.world),
-        size: Size.infinite,  // TODO: Use InteractiveViewer for pan and zoom
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListenableBuilder(
+          listenable: _controller,
+          builder: (context, child) => CustomPaint(
+            painter: HexPainter(_controller.world),
+            size: Size.infinite, // TODO: Use InteractiveViewer for pan and zoom
+          ),
+        ),
       ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10.0,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              // Play/Pause the simulation
+              setState(() {
+                if (_controller.isRunning) {
+                  _controller.stop();
+                } else {
+                  _controller.start();
+                }
+              });
+            },
+            child: Icon(_controller.isRunning ? Icons.pause : Icons.play_arrow),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              setState(_controller.toggleFastForward);
+            },
+            child: Icon(_controller.fastForward ? Icons.fast_forward : Icons.fast_forward_outlined),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
